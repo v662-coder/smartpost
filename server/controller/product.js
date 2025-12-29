@@ -75,8 +75,64 @@ const removeProduct = async (req, res) => {
 }
 
 const editProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { title, price, description } = req.body;
+    const authorId = req.user._id.toString();
 
-}
+    const product = await ProductModel.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({
+        status: false,
+        message: "Product not found",
+      });
+    }
+
+    // 🔐 ownership check
+    if (product.authorId.toString() !== authorId) {
+      return res.status(403).json({
+        status: false,
+        message: "Unauthorized access",
+      });
+    }
+
+    // 🖼 image update
+    if (req.file) {
+      removeUploadedFile(product.image); // old image delete
+      product.image = req.file.filename;
+    }
+
+    // ✏️ update fields
+    if (title) product.title = title;
+    if (price) {
+      if (isNaN(price) || Number(price) <= 0) {
+        return res.status(400).json({
+          status: false,
+          message: "Price must be greater than 0",
+        });
+      }
+      product.price = price;
+    }
+    if (description) product.description = description;
+
+    product.updatedAt = new Date();
+
+    await product.save();
+
+    return res.status(200).json({
+      status: true,
+      message: "Product updated successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 
 const getAllProduct = async (req, res) => {
     try {

@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import SimpleMdeReact from "react-simplemde-editor";
 import { marked } from "marked";
@@ -17,7 +17,7 @@ import useThinkify from "../hooks/useThinkify";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const AddPost = () => {
+const AddPost = ({ editData, onSuccess, onCancel }) => {
   const {
     setLoadingStatus,
     setAlertBoxOpenStatus,
@@ -31,13 +31,24 @@ const AddPost = () => {
     setError,
     clearErrors,
     reset,
+    setValue,
   } = useForm();
   const [tag, setTag] = useState("");
   const [tags, setTags] = useState([]);
   const [description, setDescription] = useState("");
 
+
+  useEffect(() => {
+    if (editData) {
+      setValue("title", editData.title);
+      setTags(editData.tags || []);
+      setDescription(editData.description || "");
+      
+    }
+  }, [editData, setValue]);
+
   const handleKeyDown = (event) => {
-    if (event.key === "Enter" && tag.trim() !== "") {
+    if (event.key === "Enter" && tag.trim()) {
       event.preventDefault();
       if (!tags.includes(tag.trim())) {
         setTags([...tags, tag.trim()]);
@@ -46,183 +57,117 @@ const AddPost = () => {
       clearErrors("tags");
     }
   };
-  
-  
+
+  const handleRemoveTag = (index) => {
+    setTags(tags.filter((_, i) => i !== index));
+  };
+
 
   const renderMarkdown = () => {
     const html = marked(description);
     return { __html: DOMPurify.sanitize(html) };
   };
 
-  const handleRemoveTag = (indexToRemove) => {
-    const newTags = tags.filter((_, index) => index !== indexToRemove);
-    setTags(newTags);
-  };
 
   const onSubmit = async (data) => {
     if (tags.length === 0) {
-      setError("tags", {
-        type: "manual",
-        message: "At least one tag is required",
-      });
+      setError("tags", { message: "At least one tag is required" });
       return;
     }
-    const trimmedDescription = description.trim();
-    if (trimmedDescription.length === 0) {
-      setError("description", {
-        type: "manual",
-        message: "Description is required",
-      });
+
+    if (!description.trim()) {
+      setError("description", { message: "Description is required" });
       return;
     }
 
     try {
+      debugger
       setLoadingStatus(true);
-      const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_ENDPOINT}/posts`,
-        {
+
+    const url = editData
+  ? `${import.meta.env.VITE_SERVER_ENDPOINT}/posts/${editData._id}`
+  : `${import.meta.env.VITE_SERVER_ENDPOINT}/posts`;
+
+      const method = editData ? "patch" : "post";
+
+      const response = await axios({
+        method,
+        url,
+        data: {
           title: data.title,
           tags,
-          description: trimmedDescription,
+          description: description.trim(),
         },
-        {
-          headers: {
-            Authorization: `Bearer ${Cookies.get(import.meta.env.VITE_TOKEN_KEY)}`,
-          },
-        }
-      );
-      
+        headers: {
+          Authorization: `Bearer ${Cookies.get(
+            import.meta.env.VITE_TOKEN_KEY
+          )}`,
+        },
+      });
+
       if (response.data.status) {
         reset();
         setTags([]);
         setDescription("");
+        onSuccess && onSuccess(response.data.post);
       }
-      setLoadingStatus(false);
+
       setAlertBoxOpenStatus(true);
       setAlertSeverity(response.data.status ? "success" : "error");
       setAlertMessage(response.data.message);
     } catch (error) {
-      console.error("Error fetching data:", error);
-      setLoadingStatus(false);
       setAlertBoxOpenStatus(true);
       setAlertSeverity("error");
-      setAlertMessage("Something Went Wrong");
-      error.response.data.message
-        ? setAlertMessage(error.response.data.message)
-        : setAlertMessage(error.message);
+      setAlertMessage(
+        error?.response?.data?.message || error.message
+      );
     } finally {
       setLoadingStatus(false);
     }
   };
 
   return (
-    <>
-      <Box sx={{ width: "100%" }}>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Box sx={{ display: "flex", gap: "10px" }}>
-            <Box sx={{ flex: "1" }}>
-              <Box>
-                <label
-                  htmlFor="title"
-                  style={{ fontSize: "25px", fontWeight: "bold" }}
-                >
-                  Title
-                </label>
-                <TextField
-                  placeholder="Enter Post Title"
-                  fullWidth
-                  {...register("title", { required: "Title is required" })}
-                  error={!!errors.title}
-                  helperText={errors.title ? errors.title.message : ""}
-                />
-              </Box>
+    <Box sx={{ width: "100%" }}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Box sx={{ display: "flex", gap: "15px" }}>
+          {/* LEFT */}
+          <Box sx={{ flex: 1 }}>
+            <Typography fontSize={22} fontWeight="bold">Title</Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter Post Title"
+              {...register("title", { required: "Title is required" })}
+              error={!!errors.title}
+              helperText={errors.title?.message}
+            />
 
-              <Box>
-                <label
-                  htmlFor="tags"
-                  style={{ fontSize: "25px", fontWeight: "bold" }}
-                >
-                  Tags
-                </label>
-                <Box
-                  sx={{
-                    border: "1px solid lightgray",
-                    padding: "7px",
-                    borderRadius: "5px",
-                    display: "flex",
-                    gap: "5px",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {tags.map((item, index) => (
-                    <Chip
-                      key={index}
-                      label={item}
-                      variant="outlined"
-                      size="small"
-                      sx={{
-                        backgroundColor: "#1b2e35",
-                        color: "white",
-                        borderRadius: "25px",
-                        fontSize: "13px",
-                        padding: "5px",
-                        "& .MuiChip-deleteIcon": {
-                          color: "white",
-                        },
-                      }}
-                      onDelete={() => handleRemoveTag(index)}
-                    />
-                  ))}
-
-                  <InputBase
-                    sx={{
-                      outline: "none",
-                      borderBottom: "1px solid #1b2e35",
-                      padding: "1px 10px 0 10px",
-                      "& input::placeholder": {
-                        color: "#1b2e35",
-                        opacity: "0.8",
-                      },
-                    }}
-                    placeholder="Enter Your Tag"
-                    value={tag}
-                    onChange={(event) => setTag(event.target.value)}
-                    onKeyDown={handleKeyDown}
-                  />
-                </Box>
-                {errors.tags && (
-                  <Typography color="error" variant="body2">
-                    {errors.tags.message}
-                  </Typography>
-                )}
-              </Box>
-
-              <div dangerouslySetInnerHTML={renderMarkdown()} />
+            <Typography mt={2} fontSize={22} fontWeight="bold">Tags</Typography>
+            <Box sx={{ border: "1px solid #ccc", p: 1, borderRadius: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
+              {tags.map((t, i) => (
+                <Chip key={i} label={t} onDelete={() => handleRemoveTag(i)} />
+              ))}
+              <InputBase
+                placeholder="Press Enter"
+                value={tag}
+                onChange={(e) => setTag(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
             </Box>
+            {errors.tags && <Typography color="error">{errors.tags.message}</Typography>}
 
-            <Box sx={{ flex: "1" }}>
-              <Box>
-                <label
-                  htmlFor="description"
-                  style={{ fontSize: "25px", fontWeight: "bold" }}
-                >
-                  Description
-                </label>
-                <SimpleMdeReact
-                  id="description"
-                  value={description}
-                  onChange={setDescription}
-                />
-              </Box>
-              {errors.description && (
-                <Typography color="error" variant="body2">
-                  {errors.description.message}
-                </Typography>
-              )}
-            </Box>
+            <Box mt={2} dangerouslySetInnerHTML={renderMarkdown()} />
           </Box>
-          <Button
+
+          {/* RIGHT */}
+          <Box sx={{ flex: 1 }}>
+            <Typography fontSize={22} fontWeight="bold">Description</Typography>
+            <SimpleMdeReact value={description} onChange={setDescription} />
+            {errors.description && (
+              <Typography color="error">{errors.description.message}</Typography>
+            )}
+          </Box>
+        </Box>
+         <Button
             type="submit"
             fullWidth
             variant="contained"
@@ -233,11 +178,20 @@ const AddPost = () => {
               "&:hover": { backgroundColor: "#59e3a7" },
             }}
           >
-            Post
+              {editData ? "Update Post" : "Post"}
           </Button>
-        </form>
-      </Box>
-    </>
+          {editData && (
+          <Button onClick={onCancel}  sx={{
+              mt: 2,
+              color: "white",
+              backgroundColor: "#59e3a7",
+              "&:hover": { backgroundColor: "#59e3a7" },
+            }}>
+            Cancel Edit
+          </Button>
+        )}
+      </form>
+    </Box>
   );
 };
 

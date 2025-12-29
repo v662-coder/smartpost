@@ -46,8 +46,8 @@ const Login = () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_SERVER_ENDPOINT}/users/login`,
-        data
-      );
+  data
+);
       if (response.data.status) {
         Cookies.set(import.meta.env.VITE_TOKEN_KEY, response.data.token, {
           expires: Number(import.meta.env.VITE_COOKIE_EXPIRES),

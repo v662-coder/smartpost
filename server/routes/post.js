@@ -22,4 +22,5 @@ post.delete("/:postId",userAuthentication, removePost);
 post.patch("/change-visibility/:postId", userAuthentication, handleVisibility);
 post.patch("/:postId",userAuthentication, editPost);
 
+
 export default post

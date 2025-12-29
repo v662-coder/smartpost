@@ -1,7 +1,7 @@
 import { PropTypes } from "prop-types";
 import { createContext, useState } from "react";
 
-export const ThinkifyContext = createContext(null);
+export const SmartPost = createContext(null);
 
 const Provider = ({ children }) => {
     const [alertBoxOpenStatus, setAlertBoxOpenStatus] = useState(false);
@@ -21,7 +21,7 @@ const Provider = ({ children }) => {
     }
 
     return (
-        <ThinkifyContext.Provider value={contextValue}>{children}</ThinkifyContext.Provider>
+        <SmartPost.Provider value={contextValue}>{children}</SmartPost.Provider>
     )
 }
 

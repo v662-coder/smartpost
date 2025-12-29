@@ -56,7 +56,6 @@ const removeTask = async (req, res) => {
 
 const editTask = async (req, res) => {
     try {
-
         const authorId = req.user._id.toString();
         const { taskId, taskStatus } = req.params;
         const updatedTask = await TaskModel.findOneAndUpdate({ authorId, _id: taskId }, { $set: { taskStatus, updatedAt: new Date(), } }, { new: true });

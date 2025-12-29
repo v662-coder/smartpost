@@ -54,8 +54,59 @@ const removePost = async (req, res) => {
 }
 
 const editPost = async (req, res) => {
+  try {
+    // debugger
+    const { postId } = req.params;
+    const { title, tags, description } = req.body;
+    const authorId = req.user._id.toString();
 
-}
+    // basic validation
+    if (!title || !tags || tags.length === 0 || !description) {
+      return res.status(400).json({
+        status: false,
+        message: "All fields are required",
+      });
+    }
+
+    // check post belongs to logged-in user
+    const post = await PostModel.findOne({ _id: postId, authorId });
+    if (!post) {
+      return res.status(404).json({
+        status: false,
+        message: "Post not found or unauthorized",
+      });
+    }
+
+    // update fields
+    post.title = title;
+    post.tags = tags;
+    post.description = description;
+    post.updatedAt = new Date();
+
+    const updatedPost = await post.save();
+
+    if (updatedPost) {
+  return res.status(200).json({
+  status: true,
+  message: "Post updated successfully",
+  post: updatedPost, 
+});
+
+    } else {
+      return res.status(500).json({
+        status: false,
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    console.error("Edit Post Error:", error);
+    res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 
 const getAllPost = async (req, res) => {
     try {

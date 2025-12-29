@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import Cookies from "js-cookie";
 import useThinkify from "../hooks/useThinkify";
 import AlertBox from "../../components/common/AlertBox";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const schema = yup.object().shape({
   fullName: yup.string().required("Full Name is required"),
@@ -24,10 +25,10 @@ const schema = yup.object().shape({
 });
 
 const Registration = () => {
-  // alert message
   const navigate = useNavigate();
-  const { setAlertBoxOpenStatus, setAlertMessage, setAlertSeverity } =
-    useThinkify();
+  const { setAlertBoxOpenStatus, setAlertMessage, setAlertSeverity } = useThinkify();
+  const { loginWithRedirect, user, isAuthenticated, getIdTokenClaims } = useAuth0();
+
   // form validation
   const {
     register,
@@ -41,7 +42,85 @@ const Registration = () => {
     },
     resolver: yupResolver(schema),
   });
-  // form submit
+
+  const handleGoogleLogin = async () => {
+    try {
+      await loginWithRedirect({
+        appState: {
+          returnTo: "/profile"
+        },
+        authorizationParams: {
+          connection: "google-oauth2"
+        }
+      });
+    } catch (error) {
+      console.error("Google login error:", error);
+      setAlertBoxOpenStatus(true);
+      setAlertSeverity("error");
+      setAlertMessage("Google login failed");
+    }
+  };
+
+  useEffect(() => {
+    const checkAuth0User = async () => {
+      if (isAuthenticated && user) {
+        try {
+          const tokenClaims = await getIdTokenClaims();
+          const auth0Token = tokenClaims.__raw;
+          const response = await axios.post(
+            `${import.meta.env.VITE_SERVER_ENDPOINT}/users/auth0-registration`,
+            {
+              fullName: user.name,
+              email: user.email,
+              auth0Id: user.sub,
+              picture: user.picture
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${auth0Token}`
+              }
+            }
+          );
+
+          if (response.data.status) {
+            Cookies.set(import.meta.env.VITE_TOKEN_KEY, response.data.token, {
+              expires: Number(import.meta.env.VITE_COOKIE_EXPIRES),
+              path: "/",
+            });
+            Cookies.set(import.meta.env.VITE_USER_ROLE, response.data.user.role, {
+              expires: Number(import.meta.env.VITE_COOKIE_EXPIRES),
+              path: "/",
+            });
+            if (response.data.user.role === "user") {
+              navigate("/profile");
+            } else if (response.data.user.role === "admin") {
+              navigate("/dashboard");
+            }
+          }
+        } catch (error) {
+          console.error("Auth0 integration error:", error);
+        }
+      }
+    };
+
+    checkAuth0User();
+  }, [isAuthenticated, user, navigate, getIdTokenClaims]);
+  useEffect(() => {
+    const token = Cookies.get(import.meta.env.VITE_TOKEN_KEY);
+    const role = Cookies.get(import.meta.env.VITE_USER_ROLE);
+    
+    if (token && role && !isAuthenticated) {
+      if (role === "user") {
+        navigate("/profile");
+      } else if (role === "admin") {
+        navigate("/dashboard");
+      }
+    } else if (!token && !isAuthenticated) {
+      Cookies.remove(import.meta.env.VITE_TOKEN_KEY, { path: "/" });
+      Cookies.remove(import.meta.env.VITE_USER_ROLE, { path: "/" });
+    }
+  }, [navigate, isAuthenticated]);
+
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
@@ -51,11 +130,11 @@ const Registration = () => {
       if (response.data.status) {
         Cookies.set(import.meta.env.VITE_TOKEN_KEY, response.data.token, {
           expires: Number(import.meta.env.VITE_COOKIE_EXPIRES),
-          path: "",
+          path: "/",
         });
         Cookies.set(import.meta.env.VITE_USER_ROLE, response.data.user.role, {
           expires: Number(import.meta.env.VITE_COOKIE_EXPIRES),
-          path: "",
+          path: "/",
         });
         if (response.data.user.role === "user") {
           navigate("/profile");
@@ -75,29 +154,12 @@ const Registration = () => {
       console.log(error);
       setAlertBoxOpenStatus(true);
       setAlertSeverity("error");
-      setAlertMessage("Something Went Wrong");
-      // server error message with status code
-      error.response.data.message
+      error.response?.data?.message
         ? setAlertMessage(error.response.data.message)
-        : setAlertMessage(error.message);
+        : setAlertMessage("Something Went Wrong");
     }
   };
-  // check if user is already logged in
-  useEffect(() => {
-    const token = Cookies.get(import.meta.env.VITE_TOKEN_KEY);
-    const role = Cookies.get(import.meta.env.VITE_USER_ROLE);
-    if (token && role) {
-      if (role === "user") {
-        navigate("/profile");
-      } else if (role === "admin") {
-        navigate("/dashboard");
-      }
-    } else {
-      Cookies.remove(import.meta.env.VITE_TOKEN_KEY, { path: "" });
-      Cookies.remove(import.meta.env.VITE_USER_ROLE, { path: "" });
-    }
-  }, []);
-  
+
   return (
     <>
       <Box height="100vh" sx={{ display: "flex" }}>
@@ -147,20 +209,21 @@ const Registration = () => {
                     "& fieldset": {
                       borderColor: "white",
                     },
-                    "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    "&:hover fieldset": {
+                      borderColor: "white",
+                    },
+                    "&.Mui-focused fieldset": {
                       borderColor: "white",
                     },
                   },
-                  "& .MuiInputLabel-outlined": {
-                    color: "white",
-                  },
                   "& .MuiInputBase-input": {
+                    color: "white",
                     "&::placeholder": {
-                      color: "white",
+                      color: "#cccccc",
                     },
                   },
                 }}
-                {...register("fullName", { required: true })}
+                {...register("fullName")}
               />
               {errors.fullName && (
                 <Typography
@@ -176,25 +239,25 @@ const Registration = () => {
                 placeholder="Enter Email"
                 sx={{
                   mb: 1,
-                  color: "white",
                   "& .MuiOutlinedInput-root": {
                     "& fieldset": {
                       borderColor: "white",
                     },
-                    "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    "&:hover fieldset": {
+                      borderColor: "white",
+                    },
+                    "&.Mui-focused fieldset": {
                       borderColor: "white",
                     },
                   },
-                  "& .MuiInputLabel-outlined": {
-                    color: "white",
-                  },
                   "& .MuiInputBase-input": {
+                    color: "white",
                     "&::placeholder": {
-                      color: "white",
+                      color: "#cccccc",
                     },
                   },
                 }}
-                {...register("email", { required: true })}
+                {...register("email")}
               />
               {errors.email && (
                 <Typography
@@ -211,25 +274,25 @@ const Registration = () => {
                 type="password"
                 sx={{
                   mb: 1,
-                  color: "white",
                   "& .MuiOutlinedInput-root": {
                     "& fieldset": {
                       borderColor: "white",
                     },
-                    "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    "&:hover fieldset": {
+                      borderColor: "white",
+                    },
+                    "&.Mui-focused fieldset": {
                       borderColor: "white",
                     },
                   },
-                  "& .MuiInputLabel-outlined": {
-                    color: "white",
-                  },
                   "& .MuiInputBase-input": {
+                    color: "white",
                     "&::placeholder": {
-                      color: "white",
+                      color: "#cccccc",
                     },
                   },
                 }}
-                {...register("password", { required: true })}
+                {...register("password")}
               />
               {errors.password && (
                 <Typography variant="p" component="p" sx={{ color: "red" }}>
@@ -245,13 +308,21 @@ const Registration = () => {
                 Join
               </Button>
             </Box>
-            <Divider sx={{ my: 1, color: "white" }}>OR</Divider>
+            <Divider sx={{ my: 3, color: "white", "&::before, &::after": { borderColor: "white" } }}>
+              OR
+            </Divider>
             <Box>
               <Button
-                type="submit"
                 variant="contained"
                 fullWidth
                 startIcon={<GoogleIcon />}
+                onClick={handleGoogleLogin}
+                sx={{
+                  backgroundColor: "#DB4437",
+                  "&:hover": {
+                    backgroundColor: "#C33C2E",
+                  },
+                }}
               >
                 Continue With Google
               </Button>
@@ -259,7 +330,7 @@ const Registration = () => {
             <Box>
               <Typography variant="body2" color="white" sx={{ mt: 4 }}>
                 Already Have an Account?
-                <Link to="/login" style={{ color: "white", marginLeft: "5px" }}>
+                <Link to="/login" style={{ color: "#4FC3F7", marginLeft: "5px", textDecoration: "none" }}>
                   Log In
                 </Link>
               </Typography>

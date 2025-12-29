@@ -173,6 +173,53 @@ const TaskManager = () => {
         : setAlertMessage(error.message);
     }
   };
+const getNextStatus = (currentStatus) => {
+  if (currentStatus === "todo") return "ongoing";
+  if (currentStatus === "ongoing") return "completed";
+  return "todo";
+};
+
+const handleEdit = async (taskId, currentStatus) => {
+  const nextStatus = getNextStatus(currentStatus);
+
+  try {
+    setLoadingStatus(true);
+
+    const response = await axios.patch(
+      `${import.meta.env.VITE_SERVER_ENDPOINT}/tasks/${taskId}/${nextStatus}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get(
+            import.meta.env.VITE_TOKEN_KEY
+          )}`,
+        },
+      }
+    );
+
+    if (response.data.status) {
+      setAllTask((prev) =>
+        prev.map((task) =>
+          task._id === taskId
+            ? { ...task, taskStatus: nextStatus }
+            : task
+        )
+      );
+    }
+
+    setAlertBoxOpenStatus(true);
+    setAlertSeverity("success");
+    setAlertMessage(response.data.message);
+  } catch (error) {
+    console.error(error);
+    setAlertBoxOpenStatus(true);
+    setAlertSeverity("error");
+    setAlertMessage("Task update failed");
+  } finally {
+    setLoadingStatus(false);
+  }
+};
+
 
   return (
     <>
@@ -215,38 +262,45 @@ const TaskManager = () => {
         <Grid container sx={{ minHeight: "70vh" }} spacing={3}>
           <Grid item xs>
             <List>
-              {todo.map((item) => (
-                <Task
-                  key={item._id}
-                  text={item.title}
-                  taskId={item._id}
-                  handleDelete={handleDelete}
-                />
-              ))}
+             {todo.map((item) => (
+              <Task
+                key={item._id}
+                text={item.title}
+                taskId={item._id}
+                taskStatus={item.taskStatus}
+                handleDelete={handleDelete}
+                handleEdit={handleEdit}
+              />
+            ))}
             </List>
           </Grid>
           <Grid item xs>
             <List>
-              {ongoing.map((item) => (
-                <Task
-                  key={item._id}
-                  text={item.title}
-                  taskId={item._id}
-                  handleDelete={handleDelete}
-                />
-              ))}
+           {ongoing.map((item) => (
+              <Task
+                key={item._id}
+                text={item.title}
+                taskId={item._id}
+                taskStatus={item.taskStatus}
+                handleDelete={handleDelete}
+                handleEdit={handleEdit}
+              />
+            ))}
+
             </List>
           </Grid>
           <Grid item xs>
             <List>
-              {completed.map((item) => (
-                <Task
-                  key={item._id}
-                  text={item.title}
-                  taskId={item._id}
-                  handleDelete={handleDelete}
-                />
-              ))}
+             {completed.map((item) => (
+              <Task
+                key={item._id}
+                text={item.title}
+                taskId={item._id}
+                taskStatus={item.taskStatus}
+                handleDelete={handleDelete}
+                handleEdit={handleEdit}
+              />
+            ))}
             </List>
           </Grid>
         </Grid>

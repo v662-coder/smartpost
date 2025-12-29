@@ -1,18 +1,25 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import CssBaseline from '@mui/material/CssBaseline';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
+import { Auth0Provider } from "@auth0/auth0-react";
 import './index.css'
-import { RouterProvider } from 'react-router-dom';
+import { RouterProvider } from "react-router-dom";
 import router from './routes/router.jsx';
 import Provider from '../provider/Provider.jsx';
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <CssBaseline>
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <Auth0Provider
+      domain="dev-vx4fgd6jh5ud3z7w.us.auth0.com"
+      clientId="5R16rlGQlQxaiXLp2SN1ueFPDGChcguk"
+      authorizationParams={{ 
+        redirect_uri: window.location.origin 
+      }}
+      cacheLocation="localstorage" // Optional: for better session persistence
+    >
       <Provider>
         <RouterProvider router={router} />
       </Provider>
-    </CssBaseline>
-  </React.StrictMode>,
-)
+    </Auth0Provider>
+  </StrictMode>
+);

@@ -1,8 +1,8 @@
 import { useContext } from "react";
-import { ThinkifyContext } from "../../provider/Provider";
+import { SmartPost } from "../../provider/Provider";
 
 const useThinkify = () => {
-  return useContext(ThinkifyContext);
+  return useContext(SmartPost);
 };
 
 export default useThinkify;
