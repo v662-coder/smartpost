@@ -13,9 +13,10 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { Link } from "react-router-dom";
 import { Delete, Edit } from "@mui/icons-material";
-
+import AddProduct from "./AddProduct";
 const MyProduct = () => {
   const [data, setData] = useState([]);
+  const [editProduct, setEditProduct] = useState(null);
   const {
     setLoadingStatus,
     setAlertBoxOpenStatus,
@@ -105,8 +106,9 @@ const MyProduct = () => {
     }
   };
 
-  const handleEdit = (productId) => {
-    console.log(`Edit button clicked for ${productId}`);
+
+   const handleEdit = (product) => {
+    setEditProduct(product);
   };
 
   return (
@@ -118,7 +120,23 @@ const MyProduct = () => {
           display: "none",
         },
       }}
-    >
+    >-
+     {editProduct && (
+        <Box mb={3}>
+          <AddProduct
+            editData={editProduct}
+            onCancel={() => setEditProduct(null)}
+            onSuccess={(updatedProduct) => {
+              setData((prev) =>
+                prev.map((p) =>
+                  p._id === updatedProduct?._id ? updatedProduct : p
+                )
+              );
+              setEditProduct(null);
+            }}
+          />
+        </Box>
+      )}
       <Grid container spacing={3} paddingBottom={5}>
         {data.map((product) => (
           <Grid item key={product._id} xs={12} sm={6} md={4}>
@@ -154,7 +172,7 @@ const MyProduct = () => {
                       marginRight: "5px",
                       "&:hover": { backgroundColor: "white" },
                     }}
-                    onClick={() => handleEdit(product._id)}
+                    onClick={() => handleEdit(product)}
                   >
                     <Edit />
                   </IconButton>

@@ -17,6 +17,16 @@ createRoot(document.getElementById("root")).render(
       }}
       cacheLocation="localstorage" // Optional: for better session persistence
     >
+    {/* <Auth0Provider
+  domain="dev-vx4fgd6jh5ud3z7w.us.auth0.com"
+   clientId="5R16rlGQlQxaiXLp2SN1ueFPDGChcguk"
+  authorizationParams={{
+    redirect_uri: window.location.origin,
+    // audience: "https://smartpost-api",
+    // scope: "openid profile email"
+  }}
+> */}
+
       <Provider>
         <RouterProvider router={router} />
       </Provider>

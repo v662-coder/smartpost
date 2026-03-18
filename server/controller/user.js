@@ -365,4 +365,46 @@ const removeUser = async (req, res) => {
 
 }
 
-export { registration, login, getUserData, changePassword, getUsers, removeUser, getUserActivity }
+const auth0Registration = async (req, res) => {
+  try {
+    const { fullName, email, picture } = req.body;
+
+    let user = await UserModel.findOne({ email });
+
+    // 🔹 First-time Google signup
+    if (!user) {
+      user = await UserModel.create({
+        fullName,
+        email,
+        image: picture,
+        password: null,
+        role: "user",
+        createdAt: new Date()
+      });
+    }
+
+    // 🔐 App JWT (same for manual + google)
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: process.env.COOKIE_EXPIRES }
+    );
+
+    res.status(200).json({
+      status: true,
+      message: "Google Auth Success",
+      token,
+      user
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      message: "Internal Server Error"
+    });
+  }
+};
+
+
+
+
+export { registration, login, getUserData, changePassword, getUsers, removeUser, getUserActivity,auth0Registration }

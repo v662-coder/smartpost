@@ -4,8 +4,9 @@ import { useFormContext } from "react-hook-form";
 import axios from "axios";
 import useThinkify from "../../../src/hooks/useThinkify";
 import Cookies from 'js-cookie'
+import { useEffect, useState } from "react";
 
-const AddProductForm = () => {
+const AddProductForm = ({ editData, onSuccess, onCancel }) => {
   const {
     setLoadingStatus,
     setAlertBoxOpenStatus,
@@ -20,46 +21,89 @@ const AddProductForm = () => {
     watch,
     formState: { errors },
   } = useFormContext();
-  const onSubmit = async (data) => {
+  useEffect(() => {
+    if (editData) {
+      setValue("title", editData.title);
+      setValue("price", editData.price);
+      setValue("description", editData.description);
+    }
+  }, [editData]);
+
+  // const onSubmit = async (data) => {
+  //   const formPayload = new FormData();
+  //   if (data.productimage && data.productimage[0] instanceof File) {
+  //     formPayload.append("productimage", data.productimage[0]);
+  //   }
+  //   formPayload.append("title", data.title);
+  //   formPayload.append("price", data.price);
+  //   formPayload.append("description", data.description);
+
+  //   try{
+  //     setLoadingStatus(true);
+  //     const response = await axios.post(
+  //       `${import.meta.env.VITE_SERVER_ENDPOINT}/products`,
+  //       formPayload,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${Cookies.get(import.meta.env.VITE_TOKEN_KEY)}`,
+  //         },
+  //       }
+  //     );
+  //     if (response.data.status) {
+  //       reset();
+  //     }
+  //     setLoadingStatus(false);
+  //     setAlertBoxOpenStatus(true);
+  //     setAlertSeverity(response.data.status ? "success" : "error");
+  //     setAlertMessage(response.data.message);
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //     setLoadingStatus(false);
+  //     setAlertBoxOpenStatus(true);
+  //     setAlertSeverity("error");
+  //     setAlertMessage("Something Went Wrong")
+  //     error.response.data.message
+  //       ? setAlertMessage(error.response.data.message)
+  //       : setAlertMessage(error.message);
+  //   } finally {
+  //     setLoadingStatus(false);
+  //   }
+
+  // };
+ const onSubmit = async (data) => {
     const formPayload = new FormData();
-    if (data.productimage && data.productimage[0] instanceof File) {
+
+    if (data.productimage?.[0] instanceof File) {
       formPayload.append("productimage", data.productimage[0]);
     }
+
     formPayload.append("title", data.title);
     formPayload.append("price", data.price);
     formPayload.append("description", data.description);
 
-    try{
-      setLoadingStatus(true);
-      const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_ENDPOINT}/products`,
-        formPayload,
-        {
-          headers: {
-            Authorization: `Bearer ${Cookies.get(import.meta.env.VITE_TOKEN_KEY)}`,
-          },
-        }
-      );
+    try {
+      const url = editData
+        ? `${import.meta.env.VITE_SERVER_ENDPOINT}/products/${editData._id}`
+        : `${import.meta.env.VITE_SERVER_ENDPOINT}/products`;
+
+      const method = editData ? "patch" : "post";
+
+      const response = await axios({
+        method,
+        url,
+        data: formPayload,
+        headers: {
+          Authorization: `Bearer ${Cookies.get(import.meta.env.VITE_TOKEN_KEY)}`,
+        },
+      });
+
       if (response.data.status) {
         reset();
+        onSuccess && onSuccess(response.data.product);
       }
-      setLoadingStatus(false);
-      setAlertBoxOpenStatus(true);
-      setAlertSeverity(response.data.status ? "success" : "error");
-      setAlertMessage(response.data.message);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setLoadingStatus(false);
-      setAlertBoxOpenStatus(true);
-      setAlertSeverity("error");
-      setAlertMessage("Something Went Wrong")
-      error.response.data.message
-        ? setAlertMessage(error.response.data.message)
-        : setAlertMessage(error.message);
-    } finally {
-      setLoadingStatus(false);
+    } catch (err) {
+      console.error(err);
     }
-
   };
 
   const productImage = watch("productimage");
@@ -188,7 +232,7 @@ const AddProductForm = () => {
             sx={{ backgroundColor: "#59e3a7" }}
             type="submit"
           >
-            Add
+             {editData ? "Update Product" : "Add Product"}
           </Button>
         </Box>
       </form>

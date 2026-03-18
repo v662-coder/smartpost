@@ -27,7 +27,7 @@ const schema = yup.object().shape({
 const Registration = () => {
   const navigate = useNavigate();
   const { setAlertBoxOpenStatus, setAlertMessage, setAlertSeverity } = useThinkify();
-  const { loginWithRedirect, user, isAuthenticated, getIdTokenClaims } = useAuth0();
+  const { loginWithRedirect, user, isAuthenticated, getIdTokenClaims,getAccessTokenSilently    } = useAuth0();
 
   // form validation
   const {
@@ -44,6 +44,8 @@ const Registration = () => {
   });
 
   const handleGoogleLogin = async () => {
+    debugger
+   console.log("ha ye chla ")
     try {
       await loginWithRedirect({
         appState: {
@@ -62,15 +64,29 @@ const Registration = () => {
   };
 
   useEffect(() => {
+    debugger
     const checkAuth0User = async () => {
       if (isAuthenticated && user) {
         try {
-          const tokenClaims = await getIdTokenClaims();
-          const auth0Token = tokenClaims.__raw;
+          // const tokenClaims = await getIdTokenClaims();
+      const auth0Token = await getAccessTokenSilently({
+      authorizationParams: {
+        audience: "https://smartpost-api",
+        scope: "openid profile email"
+      }
+    });
+
+          console.log(tokenClaims,"tokenClaims")
+          // const auth0Token = tokenClaims.__raw;
+          
+          console.log("🚀 ~ :73 ~ checkAuth0User ~ auth0Token:", auth0Token);
+              console.log("🚀 ~ :80 ~ checkAuth0User ~ user:", user);
+
           const response = await axios.post(
             `${import.meta.env.VITE_SERVER_ENDPOINT}/users/auth0-registration`,
             {
               fullName: user.name,
+
               email: user.email,
               auth0Id: user.sub,
               picture: user.picture
@@ -81,7 +97,10 @@ const Registration = () => {
               }
             }
           );
+          
+          console.debug("🚀 ~ :87 ~ checkAuth0User ~ response:", response);
 
+          
           if (response.data.status) {
             Cookies.set(import.meta.env.VITE_TOKEN_KEY, response.data.token, {
               expires: Number(import.meta.env.VITE_COOKIE_EXPIRES),
@@ -324,7 +343,7 @@ const Registration = () => {
                   },
                 }}
               >
-                Continue With Google
+                Continue With Google kk
               </Button>
             </Box>
             <Box>
