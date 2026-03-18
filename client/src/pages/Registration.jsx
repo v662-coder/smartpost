@@ -348,7 +348,7 @@ const Registration = () => {
             </Box>
             <Box>
               <Typography variant="body2" color="white" sx={{ mt: 4 }}>
-                Already Have an Account?
+                Already Have an Account ?
                 <Link to="/login" style={{ color: "#4FC3F7", marginLeft: "5px", textDecoration: "none" }}>
                   Log In
                 </Link>
