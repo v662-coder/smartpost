@@ -234,7 +234,7 @@ const Login = () => {
                 fullWidth
                 startIcon={<GoogleIcon />}
               >
-                Continue With Google Vishnu
+                Continue With Google
               </Button>
             </Box>
             <Box>

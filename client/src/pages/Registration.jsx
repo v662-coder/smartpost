@@ -44,8 +44,6 @@ const Registration = () => {
   });
 
   const handleGoogleLogin = async () => {
-    debugger
-   console.log("ha ye chla ")
     try {
       await loginWithRedirect({
         appState: {
@@ -64,7 +62,6 @@ const Registration = () => {
   };
 
   useEffect(() => {
-    debugger
     const checkAuth0User = async () => {
       if (isAuthenticated && user) {
         try {
@@ -76,11 +73,10 @@ const Registration = () => {
       }
     });
 
-          console.log(tokenClaims,"tokenClaims")
           // const auth0Token = tokenClaims.__raw;
           
-          console.log("🚀 ~ :73 ~ checkAuth0User ~ auth0Token:", auth0Token);
-              console.log("🚀 ~ :80 ~ checkAuth0User ~ user:", user);
+          // console.log("🚀 ~ :73 ~ checkAuth0User ~ auth0Token:", auth0Token);
+              // console.log("🚀 ~ :80 ~ checkAuth0User ~ user:", user);
 
           const response = await axios.post(
             `${import.meta.env.VITE_SERVER_ENDPOINT}/users/auth0-registration`,
@@ -98,7 +94,7 @@ const Registration = () => {
             }
           );
           
-          console.debug("🚀 ~ :87 ~ checkAuth0User ~ response:", response);
+          // console.debug("🚀 ~ :87 ~ checkAuth0User ~ response:", response);
 
           
           if (response.data.status) {
@@ -343,7 +339,7 @@ const Registration = () => {
                   },
                 }}
               >
-                Continue With Google kk
+                Continue With Google
               </Button>
             </Box>
             <Box>
