@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "@auth0/auth0-react": "^2.10.0"
+    "@auth0/auth0-react": "^2.15.1"
   }
 }
