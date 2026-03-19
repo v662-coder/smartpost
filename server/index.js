@@ -16,9 +16,10 @@ const DATABASE_NAME = process.env.DATABASE_NAME;
 
 app.use(
     cors({
-        origin: [
-            "http://localhost:5173",
-            "https://smartpost-iota.vercel.app",
+      origin: [
+        "http://localhost:5173",
+        "https://smartpost-iota.vercel.app",
+        "https://smartpost-bqaawqse5-vishnu-chaurasiyas-projects.vercel.app"
         ],
         credentials: true,
     })
