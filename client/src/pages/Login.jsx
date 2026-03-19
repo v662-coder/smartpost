@@ -239,7 +239,7 @@ const Login = () => {
             </Box>
             <Box>
               <Typography variant="body2" color="white" sx={{ mt: 4 }}>
-                {`Don't`} Have an Account?
+                {`Don't`} Have an Account ?
                 <Link
                   to="/registration"
                   style={{ color: "white", marginLeft: "5px" }}

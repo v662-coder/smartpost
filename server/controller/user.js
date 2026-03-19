@@ -23,11 +23,11 @@ const registration = [
             if (existingUser) {
                 return res.status(400).json({ status: false, message: "User already exists" });
             }
-
-            const bcryptSaltRounds = parseInt(process.env.BCRYPT_GEN_SALT_NUMBER);
+            console.log("fine at this postion 1 ")
+            const bcryptSaltRounds = parseInt(process.env.BCRYPT_GEN_SALT_NUMBER) || 10;
             const bcryptSalt = await bcrypt.genSalt(bcryptSaltRounds);
             const hashPassword = await bcrypt.hash(password, bcryptSalt);
-
+            console.log("fine at this postion 2 ")
             const userData = new UserModel({
                 fullName,
                 email,
@@ -35,6 +35,7 @@ const registration = [
                 createdAt: new Date(),
                 role: "user"
             });
+            console.log(userData,"userData@@@@@@@")
             const savedUser = await userData.save();
             if (savedUser) {
                 const token = jwt.sign({ userId: savedUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.COOKIE_EXPIRES });
@@ -50,7 +51,8 @@ const registration = [
                 res.status(500).json({ status: false, message: "Something Went Wrong" });
             }
         } catch (error) {
-            console.error(error);
+            console.error("❌ Registration Error:", error.message);
+            console.error(error.stack);
             res.status(500).json({ status: false, message: "Internal Server Error" });
         }
     }
