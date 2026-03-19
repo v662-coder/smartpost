@@ -138,6 +138,7 @@ const Registration = () => {
 
   const onSubmit = async (data) => {
     try {
+      console.log(data,"join data @@@@@@");
       const response = await axios.post(
         `${import.meta.env.VITE_SERVER_ENDPOINT}/users/registration`,
         data
