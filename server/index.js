@@ -9,28 +9,26 @@ import router from './routes/route.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
-// ✅ Allow ALL origins temporarily (debug purpose)
+// ✅ CORS
 app.use(cors({
   origin: true,
   credentials: true
 }));
 
-// ✅ Handle preflight requests
 app.options('*', cors());
 
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Debug middleware (VERY IMPORTANT)
+// ✅ Debug middleware
 app.use((req, res, next) => {
   console.log("🔥 Incoming Request:", req.method, req.url);
   next();
 });
 
-databaseConnection(process.env.DATABASE_URL, process.env.DATABASE_NAME);
-
+// ✅ Routes
 app.use('/api', express.static("uploads"));
 app.use("/api", router);
 
@@ -47,6 +45,23 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server Listening at ${PORT}`);
-});
+
+// 🔥 MAIN FIX: Start server AFTER DB CONNECT
+const startServer = async () => {
+  try {
+    await databaseConnection(
+      process.env.DATABASE_URL,
+      process.env.DATABASE_NAME
+    );
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server Listening at ${PORT}`);
+    });
+
+  } catch (error) {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
