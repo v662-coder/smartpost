@@ -49,10 +49,7 @@ app.use((err, req, res, next) => {
 // 🔥 MAIN FIX: Start server AFTER DB CONNECT
 const startServer = async () => {
   try {
-    await databaseConnection(
-      process.env.DATABASE_URL,
-      process.env.DATABASE_NAME
-    );
+    await databaseConnection(process.env.DATABASE_URL);
 
     app.listen(PORT, () => {
       console.log(`🚀 Server Listening at ${PORT}`);
