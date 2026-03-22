@@ -8,54 +8,101 @@ import ProductModel from '../models/productSchema.js';
 import TaskModel from '../models/taskSchema.js';
 
 const registration = [
-    check('fullName').matches(/^[a-zA-Z ]+$/).withMessage('Only alphabets and at least one space are allowed'),
-    check('email').isEmail().withMessage('Enter a Valid Email'),
-    check('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long').matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).*$/).withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one digit'),
-    async (req, res) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ status: false, message: errors.array()[0].msg });
-            }
+  async (req, res) => {
+    try {
+      console.log("🚀 API HIT: /registration");
+      console.log("📩 Incoming Body:", req.body);
 
-            const { fullName, email, password } = req.body;
-            const existingUser = await UserModel.findOne({ email });
-            if (existingUser) {
-                return res.status(400).json({ status: false, message: "User already exists" });
-            }
-            console.log("fine at this postion 1 ")
-            const bcryptSaltRounds = parseInt(process.env.BCRYPT_GEN_SALT_NUMBER) || 10;
-            const bcryptSalt = await bcrypt.genSalt(bcryptSaltRounds);
-            const hashPassword = await bcrypt.hash(password, bcryptSalt);
-            console.log("fine at this postion 2 ")
-            const userData = new UserModel({
-                fullName,
-                email,
-                password: hashPassword,
-                createdAt: new Date(),
-                role: "user"
-            });
-            console.log(userData,"userData@@@@@@@")
-            const savedUser = await userData.save();
-            if (savedUser) {
-                const token = jwt.sign({ userId: savedUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.COOKIE_EXPIRES });
-                // const expires = new Date(Date.now() + (parseInt(process.env.COOKIE_EXPIRES)) * 24 * 60 * 60 * 1000);
-                // res.cookie(process.env.COOKIE_KEY, token, {
-                //     httpOnly: false,
-                //     secure: true,
-                //     sameSite: 'none',
-                //     expires
-                // }).status(200).json({ status: true, message: "Registration Successful" });
-                res.json({ status: true, message: "Registration Successful", token, user: savedUser });
-            } else {
-                res.status(500).json({ status: false, message: "Something Went Wrong" });
-            }
-        } catch (error) {
-            console.error("❌ Registration Error:", error.message);
-            console.error(error.stack);
-            res.status(500).json({ status: false, message: "Internal Server Error" });
-        }
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        console.log("❌ Validation Error:", errors.array());
+        return res.status(400).json({
+          status: false,
+          message: errors.array()[0].msg,
+        });
+      }
+
+      const { fullName, email, password } = req.body;
+
+      console.log("🧾 Extracted Data:", { fullName, email, password });
+
+      // 🔍 DB Check
+      console.log("🔍 Checking existing user...");
+      const existingUser = await UserModel.findOne({ email });
+
+      if (existingUser) {
+        console.log("⚠️ User already exists");
+        return res.status(400).json({
+          status: false,
+          message: "User already exists",
+        });
+      }
+
+      console.log("✅ No existing user found");
+
+      // 🔐 ENV CHECK
+      console.log("🌍 ENV CHECK:", {
+        BCRYPT: process.env.BCRYPT_GEN_SALT_NUMBER,
+        JWT: process.env.JWT_SECRET_KEY,
+        EXPIRES: process.env.COOKIE_EXPIRES,
+      });
+
+      // 🔐 Hash Password
+      const saltRounds =
+        parseInt(process.env.BCRYPT_GEN_SALT_NUMBER) || 10;
+
+      console.log("🔐 Generating salt...");
+      const bcryptSalt = await bcrypt.genSalt(saltRounds);
+
+      console.log("🔐 Hashing password...");
+      const hashPassword = await bcrypt.hash(password, bcryptSalt);
+
+      console.log("✅ Password Hashed");
+
+      // 💾 Save User
+      const userData = new UserModel({
+        fullName,
+        email,
+        password: hashPassword,
+        role: "user",
+        createdAt: new Date(),
+      });
+
+      console.log("📦 User Object:", userData);
+
+      console.log("💾 Saving user...");
+      const savedUser = await userData.save();
+
+      console.log("✅ User Saved:", savedUser);
+
+      // 🔐 JWT
+      console.log("🔐 Generating JWT...");
+      const token = jwt.sign(
+        { userId: savedUser._id },
+        process.env.JWT_SECRET_KEY,
+        { expiresIn: process.env.COOKIE_EXPIRES }
+      );
+
+      console.log("✅ JWT Generated");
+
+      return res.status(201).json({
+        status: true,
+        message: "Registration Successful",
+        token,
+        user: savedUser,
+      });
+
+    } catch (error) {
+      console.error("❌ FULL ERROR:", error);
+      console.error("❌ ERROR MESSAGE:", error.message);
+      console.error("❌ STACK TRACE:", error.stack);
+
+      return res.status(500).json({
+        status: false,
+        message: error.message || "Internal Server Error",
+      });
     }
+  },
 ];
 
 const login = async (req, res) => {
