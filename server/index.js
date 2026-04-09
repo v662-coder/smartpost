@@ -5,8 +5,8 @@ import cookieParser from 'cookie-parser';
 
 import databaseConnection from './config/databaseConnection.js';
 import router from './routes/route.js';
-const HttpStatus = require("../server/constants/http-status.constant.js");
-const ToastyConstant = require("../server/constants/toasty.constant");
+import HttpStatus from"../server/constants/http-status.constant.js";
+import ToastyConstant from "../server/constants/toasty.constant.js";
 dotenv.config();
 
 const app = express();

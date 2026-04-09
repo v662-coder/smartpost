@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 import path from 'path';
 import fs from 'fs';
 import ProductModel from "../models/productSchema.js";
-const HttpStatus = require("../constants/http-status.constant.js");
-const ToastyConstant = require("../constants/toasty.constant");
+import HttpStatus from "../constants/http-status.constant.js";
+import ToastyConstant from "../constants/toasty.constant.js";
 
 const removeUploadedFile = (filename) => {
     const filePath = path.join(`${process.env.UPLOAD_DIRECTORY}/productimage`, filename);

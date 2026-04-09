@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
-const HttpStatus = require("../constants/http-status.constant.js");
-const ToastyConstant = require("../constants/toasty.constant");
+import HttpStatus from "../constants/http-status.constant.js";
+import ToastyConstant from "../constants/toasty.constant.js";
 const client = jwksClient({
   jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
 });

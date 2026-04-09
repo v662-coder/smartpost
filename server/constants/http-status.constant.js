@@ -355,4 +355,5 @@ const HttpStatus = {
     NETWORK_AUTHENTICATION_REQUIRED: 511
 }
 
-module.exports = HttpStatus
+export default HttpStatus;
+

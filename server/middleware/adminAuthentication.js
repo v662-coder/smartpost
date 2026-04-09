@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
-const HttpStatus = require("../constants/http-status.constant.js");
-const ToastyConstant = require("../constants/toasty.constant");
+import HttpStatus from "../constants/http-status.constant.js";
+import ToastyConstant from "../constants/toasty.constant.js";
 import UserModel from "../models/userSchema.js";
 
 const adminAuthentication = async (req, res, next) => {

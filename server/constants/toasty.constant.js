@@ -1,5 +1,7 @@
 
-const { METHOD_NOT_ALLOWED, NOT_FOUND } = require("./http-status.constant");
+
+import HttpStatus from "./http-status.constant.js";
+const { METHOD_NOT_ALLOWED, NOT_FOUND } = HttpStatus;
 
 const OPERATION = {
   ADD: "added successfully",
@@ -29,4 +31,5 @@ const Toasty = {
   },
 };
 
-module.exports = Toasty;
+
+export default Toasty;

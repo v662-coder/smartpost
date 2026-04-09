@@ -2,8 +2,8 @@ import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
 import jwksClient from "jwks-rsa";
 import UserModel from "../models/userSchema.js";
-const HttpStatus = require("../constants/http-status.constant.js");
-const ToastyConstant = require("../constants/toasty.constant");
+import HttpStatus from "../constants/http-status.constant.js";
+import ToastyConstant from "../constants/toasty.constant.js";
 
 const userAuthentication = async (req, res, next) => {
     try {

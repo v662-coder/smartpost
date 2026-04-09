@@ -1,6 +1,6 @@
 import TaskModel from "../models/taskSchema.js";
-const HttpStatus = require("../constants/http-status.constant.js");
-const ToastyConstant = require("../constants/toasty.constant");
+import HttpStatus from "../constants/http-status.constant.js";
+import ToastyConstant from "../constants/toasty.constant.js";
 
 const addTask = async (req, res) => {
     try {

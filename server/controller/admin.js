@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 import { check, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
-const HttpStatus = require("../constants/http-status.constant.js");
-const ToastyConstant = require("../constants/toasty.constant");
+import HttpStatus from "../constants/http-status.constant.js";
+import ToastyConstant from "../constants/toasty.constant.js";
 import UserModel from "../models/userSchema.js"
 
 const login = async (req, res) => {

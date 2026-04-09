@@ -5,8 +5,8 @@ import UserModel from "../models/userSchema.js"
 import PostModel from '../models/postSchema.js';
 import ProductModel from '../models/productSchema.js';
 import TaskModel from '../models/taskSchema.js';
-const HttpStatus = require("../constants/http-status.constant.js");
-const ToastyConstant = require("../constants/toasty.constant");
+import HttpStatus from "../constants/http-status.constant.js";
+import ToastyConstant from "../constants/toasty.constant.js";
 
 const registration = [
   async (req, res) => {
