@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
-
+const HttpStatus = require("../constants/http-status.constant.js");
+const ToastyConstant = require("../constants/toasty.constant");
 const client = jwksClient({
   jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
 });
@@ -14,7 +15,7 @@ function getKey(header, callback) {
 
 const auth0Authentication = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "Token missing" });
+  if (!token) return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Token missing" });
 
   jwt.verify(
     token,
@@ -25,7 +26,7 @@ const auth0Authentication = (req, res, next) => {
       algorithms: ["RS256"]
     },
     (err, decoded) => {
-      if (err) return res.status(401).json({ message: "Invalid token" });
+      if (err) return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Invalid token" });
       req.auth0User = decoded;
       next();
     }

@@ -1,11 +1,12 @@
 import bcrypt from 'bcrypt';
 import { check, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
-
 import UserModel from "../models/userSchema.js"
 import PostModel from '../models/postSchema.js';
 import ProductModel from '../models/productSchema.js';
 import TaskModel from '../models/taskSchema.js';
+const HttpStatus = require("../constants/http-status.constant.js");
+const ToastyConstant = require("../constants/toasty.constant");
 
 const registration = [
   async (req, res) => {
@@ -16,7 +17,7 @@ const registration = [
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         console.log("❌ Validation Error:", errors.array());
-        return res.status(400).json({
+        return res.status(HttpStatus.BAD_REQUEST).json({
           status: false,
           message: errors.array()[0].msg,
         });
@@ -32,7 +33,7 @@ const registration = [
 
       if (existingUser) {
         console.log("⚠️ User already exists");
-        return res.status(400).json({
+        return res.status(HttpStatus.BAD_REQUEST).json({
           status: false,
           message: "User already exists",
         });
@@ -97,9 +98,9 @@ const registration = [
       console.error("❌ ERROR MESSAGE:", error.message);
       console.error("❌ STACK TRACE:", error.stack);
 
-      return res.status(500).json({
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         status: false,
-        message: error.message || "Internal Server Error",
+        message: error.message || ToastyConstant.SERVER.INTERNAL_SERVER_ERROR,
       });
     }
   },
@@ -109,17 +110,17 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return res.status(400).json({ status: false, message: "All fields are required" });
+            return res.status(HttpStatus.BAD_REQUEST).json({ status: false, message: "All fields are required" });
         }
 
         const existingUser = await UserModel.findOne({ email });
         if (!existingUser) {
-            return res.status(401).json({ status: false, message: "Invalid Email or User does not exist" });
+            return res.status(HttpStatus.UNAUTHORIZED).json({ status: false, message: "Invalid Email or User does not exist" });
         }
 
         const isMatch = await bcrypt.compare(password, existingUser.password);
         if (!isMatch) {
-            return res.status(401).json({ status: false, message: "Wrong Password" });
+            return res.status(HttpStatus.UNAUTHORIZED).json({ status: false, message: "Wrong Password" });
         }
 
         const token = jwt.sign({ userId: existingUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.COOKIE_EXPIRES });
@@ -129,12 +130,12 @@ const login = async (req, res) => {
         //     secure: true,
         //     sameSite: 'none',
         //     expires
-        // }).status(200).json({ status: true, message: "Login Successful" });
-        res.status(200).json({ status: true, message: "Login Successful", token, user: existingUser });
+        // }).status(HttpStatus.OK).json({ status: true, message: "Login Successful" });
+        res.status(HttpStatus.OK).json({ status: true, message: "Login Successful", token, user: existingUser });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -152,10 +153,10 @@ const getUserData = async (req, res) => {
         user.totalProducts = totalProducts;
         user.ongoingTasks = ongoingTasks;
 
-        res.status(200).json({ status: true, message: "Data Fetched Successfully", user });
+        res.status(HttpStatus.OK).json({ status: true, message: "Data Fetched Successfully", user });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -167,11 +168,11 @@ const getUserData = async (req, res) => {
 //             sameSite: 'none'
 //         });
 
-//         res.status(200).json({ status: true, message: "Logout Successful" });
+//         res.status(HttpStatus.OK).json({ status: true, message: "Logout Successful" });
 
 //     } catch (error) {
 //         console.error(error);
-//         res.status(500).json({ status: false, message: "Internal Server Error" });
+//         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
 //     }
 
 // }
@@ -190,19 +191,19 @@ const changePassword = [
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ status: false, message: errors.array()[0].msg });
+        return res.status(HttpStatus.BAD_REQUEST).json({ status: false, message: errors.array()[0].msg });
       }
 
       const { oldPassword, newPassword } = req.body;
 
       const existingUser = await UserModel.findById(req.user._id);
       if (!existingUser) {
-        return res.status(401).json({ status: false, message: "User does not exist" });
+        return res.status(HttpStatus.UNAUTHORIZED).json({ status: false, message: "User does not exist" });
       }
 
       const isMatch = await bcrypt.compare(oldPassword, existingUser.password);
       if (!isMatch) {
-        return res.status(401).json({ status: false, message: "Wrong Password" });
+        return res.status(HttpStatus.UNAUTHORIZED).json({ status: false, message: "Wrong Password" });
       }
 
       const bcryptSaltRounds = parseInt(process.env.BCRYPT_GEN_SALT_NUMBER);
@@ -211,14 +212,14 @@ const changePassword = [
 
       const updatedUser = await UserModel.findByIdAndUpdate(req.user._id, { password: hashPassword }, { new: true });
       if (updatedUser) {
-        res.status(200).json({ status: true, message: "Password Changed Successfully" });
+        res.status(HttpStatus.OK).json({ status: true, message: "Password Changed Successfully" });
       } else {
-        res.status(500).json({ status: false, message: "Something Went Wrong" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: "Something Went Wrong" });
       }
 
     } catch (error) {
       console.error(error);
-      res.status(500).json({ status: false, message: "Internal Server Error" });
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
   }
 ];
@@ -240,11 +241,11 @@ const getUsers = async (req, res) => {
             users = await UserModel.find();
         }
 
-        res.status(200).json({ status: true, message: "Data Fetched Successfully", users });
+        res.status(HttpStatus.OK).json({ status: true, message: "Data Fetched Successfully", users });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -382,13 +383,13 @@ const getUserActivity = async (req, res) => {
     }));
 
     res
-      .status(200)
+      .status(HttpStatus.OK)
       .json({ status: true, message: "Data Fetched Successfully", userActivity });
   } catch (error) {
     console.error(error);
     res
-      .status(500)
-      .json({ status: false, message: "Internal Server Error" });
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
   }
 };
 
@@ -398,18 +399,18 @@ const removeUser = async (req, res) => {
         const { userId } = req.params;
         const user = await UserModel.findOne({ _id: userId });
         if (!user) {
-            return res.status(404).json({ status: false, message: "User not found" });
+            return res.status(HttpStatus.NOT_FOUND).json({ status: false, message: "User not found" });
         }
 
         const removedUser = await UserModel.findByIdAndDelete(userId);
         if (removedUser) {
-            return res.status(200).json({ status: true, message: "User Deleted Successfully" });
+            return res.status(HttpStatus.OK).json({ status: true, message: "User Deleted Successfully" });
         } else {
-            return res.status(500).json({ status: false, message: "Something Went Wrong" });
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: "Something Went Wrong" });
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 
 }
@@ -439,16 +440,16 @@ const auth0Registration = async (req, res) => {
       { expiresIn: process.env.COOKIE_EXPIRES }
     );
 
-    res.status(200).json({
+    res.status(HttpStatus.OK).json({
       status: true,
       message: "Google Auth Success",
       token,
       user
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       status: false,
-      message: "Internal Server Error"
+      message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR
     });
   }
 };

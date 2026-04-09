@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
-
+const HttpStatus = require("../constants/http-status.constant.js");
+const ToastyConstant = require("../constants/toasty.constant");
 import UserModel from "../models/userSchema.js";
 
 const adminAuthentication = async (req, res, next) => {
@@ -19,22 +20,31 @@ const adminAuthentication = async (req, res, next) => {
                         req.admin = user
                         next();
                     } else {
-                        return res.status(403).json({ "status": false, "message": "Invalid Request" });
+                        return res.status(HttpStatus.FORBIDDEN).json({
+                            status: false,
+                            message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR
+                        });
                     }
 
-                } else {
-                    return res.status(403).json({ "status": false, "message": "Invalid Request" });
-                }
+                }  else {
+                        return res.status(HttpStatus.FORBIDDEN).json({
+                            status: false,
+                            message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR
+                        });
+                    }
 
             } else {
-                res.status(401).json({ "status": false, "message": "Authorization Failed" });
-            }
+                        return res.status(HttpStatus.UNAUTHORIZED).json({
+                            status: false,
+                            message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR
+                        });
+                    }
         } else {
             throw new Error("Unauthorized User");
         }
 
     } catch (error) {
-        res.status(500).json({ "status": false, "message": "Internal Server Error", "error": error });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ "status": false, "message":ToastyConstant.SERVER.INTERNAL_SERVER_ERROR, "error": error });
     }
 }
 

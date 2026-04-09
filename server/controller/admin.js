@@ -1,7 +1,8 @@
 import bcrypt from 'bcrypt';
 import { check, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
-
+const HttpStatus = require("../constants/http-status.constant.js");
+const ToastyConstant = require("../constants/toasty.constant");
 import UserModel from "../models/userSchema.js"
 
 const login = async (req, res) => {
@@ -13,12 +14,12 @@ const login = async (req, res) => {
 
         const existingUser = await UserModel.findOne({ email });
         if (!existingUser || existingUser.role !== "user") {
-            return res.status(401).json({ status: false, message: "Invalid Email or User does not exist" });
+            return res.status(HttpStatus.UNAUTHORIZED).json({ status: false, message: "Invalid Email or User does not exist" });
         }
 
         const isMatch = await bcrypt.compare(password, existingUser.password);
         if (!isMatch) {
-            return res.status(401).json({ status: false, message: "Wrong Password" });
+            return res.status(HttpStatus.UNAUTHORIZED).json({ status: false, message: "Wrong Password" });
         }
 
         const token = jwt.sign({ userId: existingUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.TOKEN_EXPIRES || '1h' });
@@ -28,20 +29,20 @@ const login = async (req, res) => {
             secure: true,
             sameSite: 'none',
             expires
-        }).status(200).json({ status: true, message: "Login Successful" });
+        }).status(HttpStatus.OK).json({ status: true, message: "Login Successful" });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
 const getUserData = async (req, res) => {
     try {
-        res.status(200).json({ status: true, message: "Data Fetched Successfully", user: req.user });
+        res.status(HttpStatus.OK).json({ status: true, message: "Data Fetched Successfully", user: req.user });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR});
     }
 }
 
@@ -53,11 +54,11 @@ const logOut = async (req, res) => {
             sameSite: 'none'
         });
 
-        res.status(200).json({ status: true, message: "Logout Successful" });
+        res.status(HttpStatus.OK).json({ status: true, message: "Logout Successful" });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 
 }
@@ -65,11 +66,11 @@ const logOut = async (req, res) => {
 const userList = async (req, res) => {
     try {
         const users = await UserModel.find({}).select("-password");
-        res.status(200).json({ status: true, message: "Data Fetched Successfully", users });
+        res.status(HttpStatus.OK).json({ status: true, message: "Data Fetched Successfully", users });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false,message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR});
     }
 }
 
@@ -95,11 +96,11 @@ const getLastMonthNewUsersCount = async (req, res) => {
                 $sort: { _id: 1 },
             },
         ]);
-        res.status(200).json({ status: true, message: "Data Fetched Successfully", userCount });
+        res.status(HttpStatus.OK).json({ status: true, message: "Data Fetched Successfully", userCount });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -121,10 +122,10 @@ const getRoleBasedUserCount = async (req, res) => {
             },
         ]);
 
-        res.status(200).json({ status: true, message: "Data Fetched Successfully", roleCounts });
+        res.status(HttpStatus.OK).json({ status: true, message: "Data Fetched Successfully", roleCounts });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 

@@ -5,13 +5,14 @@ import cookieParser from 'cookie-parser';
 
 import databaseConnection from './config/databaseConnection.js';
 import router from './routes/route.js';
-
+const HttpStatus = require("../server/constants/http-status.constant.js");
+const ToastyConstant = require("../server/constants/toasty.constant");
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ CORS
+//  CORS
 app.use(cors({
   origin: true,
   credentials: true
@@ -22,13 +23,13 @@ app.options('*', cors());
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Debug middleware
+//  Debug middleware
 app.use((req, res, next) => {
-  console.log("🔥 Incoming Request:", req.method, req.url);
+  console.log(" Incoming Request:", req.method, req.url);
   next();
 });
 
-// ✅ Routes
+//  Routes
 app.use('/api', express.static("uploads"));
 app.use("/api", router);
 
@@ -36,12 +37,12 @@ app.get("/", (req, res) => {
   res.send("Server Running Successfully");
 });
 
-// ✅ Error handler
+//  Error handler
 app.use((err, req, res, next) => {
-  console.error("❌ ERROR:", err);
-  res.status(500).json({
+  console.error(" ERROR:", err);
+  res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
     status: false,
-    message: err.message
+    message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR
   });
 });
 

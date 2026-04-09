@@ -2,13 +2,15 @@ import mongoose from "mongoose";
 import path from 'path';
 import fs from 'fs';
 import ProductModel from "../models/productSchema.js";
+const HttpStatus = require("../constants/http-status.constant.js");
+const ToastyConstant = require("../constants/toasty.constant");
 
 const removeUploadedFile = (filename) => {
     const filePath = path.join(`${process.env.UPLOAD_DIRECTORY}/productimage`, filename);
     fs.unlink(filePath, (err) => {
         if (err) {
             console.error(err);
-            throw new Error("Internal Server Error");
+            throw new Error(ToastyConstant.SERVER.INTERNAL_SERVER_ERROR);
         }
     });
 };
@@ -21,12 +23,12 @@ const addProduct = async (req, res) => {
 
         if (!title || !price || !description || !image) {
             if (image) removeUploadedFile(image);
-            return res.status(400).json({ status: false, message: 'All fields are required.' });
+            return res.status(HttpStatus.BAD_REQUEST).json({ status: false, message: 'All fields are required.' });
         }
 
         if (isNaN(price) || Number(price) <= 0) {
             if (image) removeUploadedFile(image);
-            return res.status(400).json({ status: false, message: 'Price must be a valid number greater than 0.' });
+            return res.status(HttpStatus.BAD_REQUEST).json({ status: false, message: 'Price must be a valid number greater than 0.' });
         }
 
         const newProduct = await ProductModel({
@@ -42,11 +44,11 @@ const addProduct = async (req, res) => {
         if (savedProduct) {
             return res.status(201).json({ status: true, message: "Product created successfully" });
         } else {
-            return res.status(500).json({ status: false, message: "Something Went Wrong" });
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: "Something Went Wrong" });
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -56,7 +58,7 @@ const removeProduct = async (req, res) => {
         const authorId = req.user._id.toString();
         const product = await ProductModel.findOne({ _id: productId, authorId });
         if (!product) {
-            return res.status(404).json({ status: false, message: "Product not found" });
+            return res.status(HttpStatus.NOT_FOUND).json({ status: false, message: "Product not found" });
         }
 
         if (product.image) {
@@ -64,13 +66,13 @@ const removeProduct = async (req, res) => {
         }
         const deletedProduct = await ProductModel.findByIdAndDelete(productId);
         if (deletedProduct) {
-            return res.status(200).json({ status: true, message: "Product Deleted Successfully" });
+            return res.status(HttpStatus.OK).json({ status: true, message: "Product Deleted Successfully" });
         } else {
-            return res.status(500).json({ status: false, message: "Something Went Wrong" });
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: "Something Went Wrong" });
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -83,7 +85,7 @@ const editProduct = async (req, res) => {
     const product = await ProductModel.findById(productId);
 
     if (!product) {
-      return res.status(404).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         status: false,
         message: "Product not found",
       });
@@ -91,7 +93,7 @@ const editProduct = async (req, res) => {
 
     // 🔐 ownership check
     if (product.authorId.toString() !== authorId) {
-      return res.status(403).json({
+      return res.status(HttpStatus.UNAUTHORIZED).json({
         status: false,
         message: "Unauthorized access",
       });
@@ -107,7 +109,7 @@ const editProduct = async (req, res) => {
     if (title) product.title = title;
     if (price) {
       if (isNaN(price) || Number(price) <= 0) {
-        return res.status(400).json({
+        return res.status(HttpStatus.BAD_REQUEST).json({
           status: false,
           message: "Price must be greater than 0",
         });
@@ -120,15 +122,15 @@ const editProduct = async (req, res) => {
 
     await product.save();
 
-    return res.status(200).json({
+    return res.status(HttpStatus.OK).json({
       status: true,
       message: "Product updated successfully",
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       status: false,
-      message: "Internal Server Error",
+      message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR,
     });
   }
 };
@@ -150,11 +152,11 @@ const getAllProduct = async (req, res) => {
         }
 
         const products = await productsQuery;
-        return res.status(200).json({ status: true, products });
+        return res.status(HttpStatus.OK).json({ status: true, products });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -190,12 +192,12 @@ const getSingleProduct = async (req, res) => {
         ])
 
         if (!product) {
-            return res.status(404).json({ status: false, message: "Product not found" });
+            return res.status(HttpStatus.NOT_FOUND).json({ status: false, message: "Product not found" });
         }
-        return res.status(200).json({ status: true, message: "Data Fetched Successfully", product: product[0] });
+        return res.status(HttpStatus.OK).json({ status: true, message: "Data Fetched Successfully", product: product[0] });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 

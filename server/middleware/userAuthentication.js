@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
 import jwksClient from "jwks-rsa";
-
 import UserModel from "../models/userSchema.js";
+const HttpStatus = require("../constants/http-status.constant.js");
+const ToastyConstant = require("../constants/toasty.constant");
 
 const userAuthentication = async (req, res, next) => {
     try {
@@ -18,15 +19,15 @@ const userAuthentication = async (req, res, next) => {
                         req.user = user
                         next();
                     } else {
-                        return res.status(403).json({ "status": false, "message": "Invalid Request" });
+                        return res.status(HttpStatus.FORBIDDEN).json({ "status": false, "message": "Invalid Request" });
                     }
 
                 } else {
-                    return res.status(403).json({ "status": false, "message": "Invalid Request" });
+                    return res.status(HttpStatus.FORBIDDEN).json({ "status": false, "message": "Invalid Request" });
                 }
 
             } else {
-                res.status(401).json({ "status": false, "message": "Authorization Failed" });
+                res.status(HttpStatus.UNAUTHORIZED).json({ "status": false, "message": "Authorization Failed" });
             }
         } else {
             throw new Error("Unauthorized User");
@@ -34,7 +35,7 @@ const userAuthentication = async (req, res, next) => {
 
     } catch (error) {
         console.log(error)
-        res.status(500).json({ "status": false, "message": "Internal Server Error", "error": error });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ "status": false, "message": ToastyConstant.SERVER.INTERNAL_SERVER_ERROR, "error": error });
     }
 }
 
@@ -116,7 +117,7 @@ const getKey = (header, callback) => {
 const auth0VerifyToken = (req, res, next) => {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Token missing" });
+    return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Token missing" });
   }
 
   const token = auth.split(" ")[1];
@@ -131,7 +132,7 @@ const auth0VerifyToken = (req, res, next) => {
     },
     (err, decoded) => {
       if (err) {
-        return res.status(401).json({ message: "Invalid Auth0 token" });
+        return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Invalid Auth0 token" });
       }
 
       req.auth0User = decoded;

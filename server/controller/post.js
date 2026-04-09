@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
 import PostModel from "../models/postSchema.js";
-
+const HttpStatus = require("../constants/http-status.constant.js");
+const ToastyConstant = require("../constants/toasty.constant");
 const addPost = async (req, res) => {
     try {
         const { title, tags, description } = req.body;
         const authorId = req.user._id.toString();
 
         if (!title || !tags.length || !description) {
-            return res.status(400).json({ status: false, message: "All fields are required" });
+            return res.status(HttpStatus.BAD_REQUEST).json({ status: false, message: "All fields are required" });
         }
 
         const newPost = await PostModel({
@@ -19,13 +20,13 @@ const addPost = async (req, res) => {
         })
         const savedPost = await newPost.save();
         if (savedPost) {
-            return res.status(201).json({ status: true, message: "Post created successfully" });
+            return res.status(HttpStatus.CREATED).json({ status: true, message: "Post created successfully" });
         } else {
-            return res.status(500).json({ status: false, message: "Something Went Wrong" });
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: "Something Went Wrong" });
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 
 }
@@ -37,19 +38,19 @@ const removePost = async (req, res) => {
         const authorId = req.user._id.toString();
         const post = await PostModel.findOne({ _id: postId, authorId });
         if (!post) {
-            return res.status(404).json({ status: false, message: "Post not found" });
+            return res.status(HttpStatus.NOT_FOUND).json({ status: false, message: "Post not found" });
         }
 
         const deletedPost = await PostModel.findByIdAndDelete(postId);
         if (deletedPost) {
-            return res.status(200).json({ status: true, message: "Post Deleted Successfully" });
+            return res.status(HttpStatus.OK).json({ status: true, message: "Post Deleted Successfully" });
         } else {
-            return res.status(500).json({ status: false, message: "Something Went Wrong" });
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: "Something Went Wrong" });
         }
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -62,7 +63,7 @@ const editPost = async (req, res) => {
 
     // basic validation
     if (!title || !tags || tags.length === 0 || !description) {
-      return res.status(400).json({
+      return res.status(HttpStatus.BAD_REQUEST).json({
         status: false,
         message: "All fields are required",
       });
@@ -71,7 +72,7 @@ const editPost = async (req, res) => {
     // check post belongs to logged-in user
     const post = await PostModel.findOne({ _id: postId, authorId });
     if (!post) {
-      return res.status(404).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         status: false,
         message: "Post not found or unauthorized",
       });
@@ -86,23 +87,23 @@ const editPost = async (req, res) => {
     const updatedPost = await post.save();
 
     if (updatedPost) {
-  return res.status(200).json({
+  return res.status(HttpStatus.OK).json({
   status: true,
   message: "Post updated successfully",
   post: updatedPost, 
 });
 
     } else {
-      return res.status(500).json({
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         status: false,
         message: "Something went wrong",
       });
     }
   } catch (error) {
     console.error("Edit Post Error:", error);
-    res.status(500).json({
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       status: false,
-      message: "Internal Server Error",
+      message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR,
     });
   }
 };
@@ -124,11 +125,11 @@ const getAllPost = async (req, res) => {
         }
 
         const posts = await postsQuery;
-        res.status(200).json({ status: true, message: "Data Fetched Successfully", posts });
+        res.status(HttpStatus.OK).json({ status: true, message: "Data Fetched Successfully", posts });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -218,13 +219,13 @@ const getSinglePost = async (req, res) => {
         ]);
 
         if (!post || post.length === 0) {
-            return res.status(404).json({ status: false, message: "Post not found" });
+            return res.status(HttpStatus.NOT_FOUND).json({ status: false, message: "Post not found" });
         }
-        return res.status(200).json({ status: true, message: "Data Fetched Successfully", post: post[0] });
+        return res.status(HttpStatus.OK).json({ status: true, message: "Data Fetched Successfully", post: post[0] });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -235,31 +236,31 @@ const addComment = async (req, res) => {
         const userId = req.user._id.toString();
 
         if (!comment) {
-            return res.status(400).json({ status: false, message: "Comment is required" });
+            return res.status(HttpStatus.BAD_REQUEST).json({ status: false, message: "Comment is required" });
         }
 
         const post = await PostModel.findById(postId);
         if (!post) {
-            return res.status(404).json({ status: false, message: "Post not found" });
+            return res.status(HttpStatus.NOT_FOUND).json({ status: false, message: "Post not found" });
         }
 
         const existingComment = post.comments.find(comment => comment.userId.toString() === userId.toString());
 
         if (existingComment) {
-            return res.status(400).json({ status: false, message: "You have already commented on this post" });
+            return res.status(HttpStatus.BAD_REQUEST).json({ status: false, message: "You have already commented on this post" });
         }
 
         post.comments.push({ userId, comment });
         const updatedPost = await post.save();
         if (updatedPost) {
-            return res.status(201).json({ status: true, message: "Comment added successfully" });
+            return res.status(HttpStatus.CREATED).json({ status: true, message: "Comment added successfully" });
         } else {
-            return res.status(500).json({ status: false, message: "Something Went Wrong" });
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: "Something Went Wrong" });
         }
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -270,12 +271,12 @@ const addReaction = async (req, res) => {
         const userId = req.user._id.toString();
 
         if (!reactionType) {
-            return res.status(400).json({ status: false, message: "Reaction is required" });
+            return res.status(HttpStatus.BAD_REQUEST).json({ status: false, message: "Reaction is required" });
         }
 
         const post = await PostModel.findById(postId);
         if (!post) {
-            return res.status(404).json({ status: false, message: "Post not found" });
+            return res.status(HttpStatus.NOT_FOUND).json({ status: false, message: "Post not found" });
         }
 
         const existingReaction = post.reactions.find(reaction => reaction.userId.toString() === userId.toString());
@@ -283,14 +284,14 @@ const addReaction = async (req, res) => {
             if (existingReaction.reaction === reactionType) {
                 post.reactions = post.reactions.filter(reaction => reaction.userId.toString() !== userId.toString());
                 await post.save();
-                return res.status(201).json({ status: true, message: "Reaction updated successfully" });
+                return res.status(HttpStatus.CREATED).json({ status: true, message: "Reaction updated successfully" });
             } else {
                 existingReaction.reaction = reactionType;
                 const updatedPost = await post.save();
                 if (updatedPost) {
-                    return res.status(201).json({ status: true, message: "Reaction updated successfully" });
+                    return res.status(HttpStatus.CREATED).json({ status: true, message: "Reaction updated successfully" });
                 } else {
-                    return res.status(500).json({ status: false, message: "Something Went Wrong" });
+                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: "Something Went Wrong" });
                 }
             }
         }
@@ -298,14 +299,14 @@ const addReaction = async (req, res) => {
         post.reactions.push({ userId, reaction: reactionType });
         const updatedPost = await post.save();
         if (updatedPost) {
-            return res.status(201).json({ status: true, message: "Reaction updated successfully" });
+            return res.status(HttpStatus.CREATED).json({ status: true, message: "Reaction updated successfully" });
         } else {
-            return res.status(500).json({ status: false, message: "Something Went Wrong" });
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: "Something Went Wrong" });
         }
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -315,13 +316,13 @@ const handleVisibility = async (req, res) => {
         const post = await PostModel.findById(postId);
         const updatedPost = await PostModel.findByIdAndUpdate(postId, { visibility: post.visibility === "public" ? "private" : "public" })
         if (updatedPost) {
-            res.status(200).json({ status: true, message: "Visibility Updated Successfully" });
+            res.status(HttpStatus.OK).json({ status: true, message: "Visibility Updated Successfully" });
         } else {
-            res.status(500).json({ status: false, message: "Something Went Wrong" });
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: "Something Went Wrong" });
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ status: false, message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 
