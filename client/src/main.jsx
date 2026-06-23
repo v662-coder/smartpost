@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { Auth0Provider } from "@auth0/auth0-react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import './index.css'
 import { RouterProvider } from "react-router-dom";
 import router from './routes/router.jsx';
@@ -29,6 +30,7 @@ createRoot(document.getElementById("root")).render(
 
       <Provider>
         <RouterProvider router={router} />
+        <SpeedInsights />
       </Provider>
     </Auth0Provider>
   </StrictMode>
