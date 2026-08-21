@@ -20,7 +20,9 @@ import MyProduct from "../pages/MyProduct";
 import PublicRoute from "../layouts/PublicRoute";
 import Product from "../pages/Product";
 import Subscription from "../pages/Subscription";
-
+import PrivacyPolicy from "../pages/PrivacyPolicy";
+import TermsOfService from "../pages/TermsOfService";
+import PublicLayout from "../layouts/PublicLayout";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -30,10 +32,26 @@ const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
-  {
-    path: "/registration",
-    element: <Registration />,
-  },
+ {
+  path: "/privacy-policy",
+  element: (
+    <PublicLayout>
+      <PrivacyPolicy />
+    </PublicLayout>
+  ),
+},
+{
+  path: "/terms-of-service",
+  element: (
+    <PublicLayout>
+      <TermsOfService />
+    </PublicLayout>
+  ),
+},
+{
+  path: "/terms-of-service",
+  element: <TermsOfService />,
+},
   {
     path: "/profile",
     element: (
