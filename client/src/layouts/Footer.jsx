@@ -9,8 +9,7 @@ import {
   List,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import PrivacyPolicy from "../pages/PrivacyPolicy";
-import TermsOfService from "../pages/TermsOfService";
+
 const Footer = () => {
   return (
     <footer

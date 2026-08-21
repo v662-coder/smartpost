@@ -23,6 +23,9 @@ import Subscription from "../pages/Subscription";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
 import TermsOfService from "../pages/TermsOfService";
 import PublicLayout from "../layouts/PublicLayout";
+import About from "../pages/About";
+import Contact from "../pages/Contact";
+import Career from "../pages/Career";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -32,7 +35,31 @@ const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
- {
+{
+  path: "/about",
+  element: (
+    <PublicLayout>
+      <About />
+    </PublicLayout>
+  ),
+},
+{
+  path: "/career",
+  element: (
+    <PublicLayout>
+      <Career />
+    </PublicLayout>
+  ),
+},
+{
+  path: "/contact",
+  element: (
+    <PublicLayout>
+      <Contact />
+    </PublicLayout>
+  ),
+},
+{
   path: "/privacy-policy",
   element: (
     <PublicLayout>
