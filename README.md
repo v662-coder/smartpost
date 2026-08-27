@@ -1,11 +1,11 @@
 # Smart Post
 
 Smart Post is a vibrant space where people from diverse backgrounds and interests come together to engage in meaningful conversations, fostering an environment rich in idea exchange, knowledge sharing, and diverse experiences.
-
+# Live 🧑‍💻 : https://smartpost-iota.vercel.app/
 # Preview
 
 <img src="/preview.png">
-<a href="https://Smartpost.vercel.app" target="_blank">Live Preview</a> | <a href="https://Smartpost-server.vercel.app" target="_blank">Live API</a> | <a href="https://documenter.getpostman.com/view/27027258/2sA3dxEXJh" target="_blank">Postman</a>
+<a href="https://Smartpost.vercel.app" target="_blank">Live Preview</a> | <a href="https://smartpost-iota.vercel.app/" target="_blank">Live API</a> | <a href="https://smartpost-iota.vercel.app/" target="_blank">Postman</a>
 
 # Requirements
 
