@@ -1,5 +1,5 @@
 import {Grid } from "@mui/material";
-import ChangePassword from "../../components/setting/ChangePassword";
+import ChangePassword from "../components/setting/ChangePassword";
 
 const Setting = () => {
   return (

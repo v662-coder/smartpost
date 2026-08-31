@@ -1,6 +1,6 @@
 import { Grid } from "@mui/material";
-import LastMonthActivity from "../../../components/dashboard/LastMonthActivity";
-import RoleCount from "../../../components/dashboard/RoleCount";
+import LastMonthActivity from "../../components/dashboard/LastMonthActivity";
+import RoleCount from "../../components/dashboard/RoleCount";
 
 const Dashboard = () => {
   return (

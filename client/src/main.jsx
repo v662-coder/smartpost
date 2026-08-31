@@ -1,35 +1,49 @@
-import { StrictMode } from "react";
+// import { StrictMode } from "react";
+// import { createRoot } from "react-dom/client";
+
+// import { Auth0Provider } from "@auth0/auth0-react";
+// import "./index.css";
+// import { RouterProvider } from "react-router-dom";
+// import router from "./routes/router.jsx";
+// import Provider from "./provider/Provider.jsx";
+
+// createRoot(document.getElementById("root")).render(
+//   <StrictMode>
+//     <Auth0Provider
+//       domain={import.meta.env.VITE_AUTH0_DOMAIN}
+//       clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
+//       authorizationParams={{
+//         redirect_uri: window.location.origin,
+//       }}
+//       cacheLocation="localstorage" // for better session persistence across reloads
+//     >
+//       <Provider>
+//         <RouterProvider router={router} />
+//       </Provider>
+//     </Auth0Provider>
+//   </StrictMode>
+// );
+
+
 import { createRoot } from "react-dom/client";
 
 import { Auth0Provider } from "@auth0/auth0-react";
-import './index.css'
+import "./index.css";
 import { RouterProvider } from "react-router-dom";
-import router from './routes/router.jsx';
-import Provider from '../provider/Provider.jsx';
+import router from "./routes/router.jsx";
+import Provider from "./provider/Provider.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <Auth0Provider
-      domain="dev-vx4fgd6jh5ud3z7w.us.auth0.com"
-      clientId="5R16rlGQlQxaiXLp2SN1ueFPDGChcguk"
-      authorizationParams={{ 
-        redirect_uri: window.location.origin 
-      }}
-      cacheLocation="localstorage" // Optional: for better session persistence
-    >
-    {/* <Auth0Provider
-  domain="dev-vx4fgd6jh5ud3z7w.us.auth0.com"
-   clientId="5R16rlGQlQxaiXLp2SN1ueFPDGChcguk"
-  authorizationParams={{
-    redirect_uri: window.location.origin,
-    // audience: "https://smartpost-api",
-    // scope: "openid profile email"
-  }}
-> */}
-
-      <Provider>
-        <RouterProvider router={router} />
-      </Provider>
-    </Auth0Provider>
-  </StrictMode>
+  <Auth0Provider
+    domain={import.meta.env.VITE_AUTH0_DOMAIN}
+    clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
+    authorizationParams={{
+      redirect_uri: window.location.origin,
+    }}
+    cacheLocation="localstorage" 
+  >
+    <Provider>
+      <RouterProvider router={router} />
+    </Provider>
+  </Auth0Provider>
 );

@@ -26,6 +26,12 @@ import PublicLayout from "../layouts/PublicLayout";
 import About from "../pages/About";
 import Contact from "../pages/Contact";
 import Career from "../pages/Career";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
+import Community from "../pages/Community";
+import Forums from "../pages/Forums";
+import CaseStudies from "../pages/CaseStudies";
+import Blogs from "../pages/Blogs";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -34,6 +40,18 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/registration",
+    element: <Registration />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/reset-password/:token",
+    element: <ResetPassword />,
   },
 {
   path: "/about",
@@ -48,6 +66,38 @@ const router = createBrowserRouter([
   element: (
     <PublicLayout>
       <Career />
+    </PublicLayout>
+  ),
+},
+{
+  path: "/community",
+  element: (
+    <PublicLayout>
+      <Community />
+    </PublicLayout>
+  ),
+},
+{
+  path: "/forums",
+  element: (
+    <PublicLayout>
+      <Forums />
+    </PublicLayout>
+  ),
+},
+{
+  path: "/case-studies",
+  element: (
+    <PublicLayout>
+      <CaseStudies />
+    </PublicLayout>
+  ),
+},
+{
+  path: "/blogs",
+  element: (
+    <PublicLayout>
+      <Blogs />
     </PublicLayout>
   ),
 },
@@ -74,10 +124,6 @@ const router = createBrowserRouter([
       <TermsOfService />
     </PublicLayout>
   ),
-},
-{
-  path: "/terms-of-service",
-  element: <TermsOfService />,
 },
   {
     path: "/profile",

@@ -2,12 +2,16 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import databaseConnection from './config/databaseConnection.js';
 import router from './routes/route.js';
-import HttpStatus from"../server/constants/http-status.constant.js";
-import ToastyConstant from "../server/constants/toasty.constant.js";
+import HttpStatus from './constants/http-status.constant.js';
+import ToastyConstant from './constants/toasty.constant.js';
 dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,16 +34,30 @@ app.use((req, res, next) => {
 });
 
 //  Routes
-app.use('/api', express.static("uploads"));
+// Resolve the uploads directory relative to this file (not process.cwd()) so
+// static file serving works no matter which directory `node`/`nodemon` is launched from.
+app.use('/api', express.static(path.join(__dirname, process.env.UPLOAD_DIRECTORY || 'uploads')));
 app.use("/api", router);
 
 app.get("/", (req, res) => {
   res.send("Server Running Successfully");
 });
 
-//  Error handler
+//  404 handler for unmatched API routes
+app.use((req, res) => {
+  res.status(HttpStatus.NOT_FOUND).json({ status: false, message: "Route not found" });
+});
+
+//  Central error handler (multer errors, uncaught route errors, etc.)
 app.use((err, req, res, next) => {
   console.error(" ERROR:", err);
+  if (err && err.message && err.message.includes("allowed")) {
+    // File-type/validation errors thrown by multer's fileFilter
+    return res.status(HttpStatus.BAD_REQUEST).json({ status: false, message: err.message });
+  }
+  if (err && err.code === "LIMIT_FILE_SIZE") {
+    return res.status(HttpStatus.BAD_REQUEST).json({ status: false, message: "File is too large. Maximum size is 5MB." });
+  }
   res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
     status: false,
     message: ToastyConstant.SERVER.INTERNAL_SERVER_ERROR

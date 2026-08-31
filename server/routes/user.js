@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUserData, login, registration, changePassword, getUsers, removeUser, getUserActivity,auth0Registration } from '../controller/user.js';
+import { getUserData, login, registration, changePassword, getUsers, removeUser, getUserActivity, auth0Registration, forgotPassword, resetPassword } from '../controllers/user.js';
 import userAuthentication from '../middleware/userAuthentication.js';
 import adminAuthentication from '../middleware/adminAuthentication.js';
 import { auth0VerifyToken } from "../middleware/userAuthentication.js";
@@ -10,6 +10,8 @@ user.post("/login", login);
 user.get("/profile", userAuthentication, getUserData);
 user.get("/activity", userAuthentication, getUserActivity);
 user.put("/change-password", userAuthentication, changePassword);
+user.post("/forgot-password", forgotPassword);
+user.post("/reset-password/:token", resetPassword);
 user.get("", adminAuthentication, getUsers);
 user.delete("/:userId", adminAuthentication, removeUser);
 // user.get("/log-out", logOut);

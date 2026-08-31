@@ -1,5 +1,5 @@
 import express from 'express';
-import { addProduct, editProduct, getAllProduct, getSingleProduct, removeProduct } from '../controller/product.js';
+import { addProduct, editProduct, getAllProduct, getSingleProduct, removeProduct } from '../controllers/product.js';
 import userAuthentication from '../middleware/userAuthentication.js';
 import uploadFile from '../middleware/uploadFile.js';
 

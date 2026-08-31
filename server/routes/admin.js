@@ -1,5 +1,5 @@
 import express from 'express';
-import { getLastMonthNewUsersCount, getRoleBasedUserCount, getUserData, logOut, login, userList } from '../controller/admin.js';
+import { getLastMonthNewUsersCount, getRoleBasedUserCount, getUserData, logOut, login, userList } from '../controllers/admin.js';
 import adminAuthentication from '../middleware/adminAuthentication.js';
 
 const admin = express.Router();

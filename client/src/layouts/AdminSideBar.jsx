@@ -17,7 +17,7 @@ import NavBar from "./NavBar";
 import useThinkify from "../hooks/useThinkify";
 import Cookies from "js-cookie";
 import { useEffect } from "react";
-import AlertBox from "../../components/common/AlertBox";
+import AlertBox from "../components/common/AlertBox";
 import Footer from "./Footer";
 
 const AdminSideBar = () => {

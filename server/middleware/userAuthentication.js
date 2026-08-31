@@ -15,6 +15,9 @@ const userAuthentication = async (req, res, next) => {
                 if (Types.ObjectId.isValid(userId)) {
 
                     const user = await UserModel.findById(userId).select("-password");
+                    if (!user) {
+                        return res.status(HttpStatus.UNAUTHORIZED).json({ "status": false, "message": "Authorization Failed" });
+                    }
                     if (user.role === "user") {
                         req.user = user
                         next();
@@ -34,8 +37,11 @@ const userAuthentication = async (req, res, next) => {
         }
 
     } catch (error) {
-        console.log(error)
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ "status": false, "message": ToastyConstant.SERVER.INTERNAL_SERVER_ERROR, "error": error });
+        console.error("Auth error:", error.message);
+        if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
+            return res.status(HttpStatus.UNAUTHORIZED).json({ "status": false, "message": "Session expired. Please log in again." });
+        }
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ "status": false, "message": ToastyConstant.SERVER.INTERNAL_SERVER_ERROR });
     }
 }
 

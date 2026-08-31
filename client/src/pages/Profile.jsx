@@ -10,12 +10,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-import ProfileCardDetails from "../../components/profile/profile/ProfileCardDetails";
-import ActivityGrid from "../../components/profile/profile/ActivityGrid";
+import ProfileCardDetails from "../components/profile/profile/ProfileCardDetails";
+import ActivityGrid from "../components/profile/profile/ActivityGrid";
 import useThinkify from "../hooks/useThinkify";
-import RecentPost from "../../components/profile/profile/RecentPost";
-import LatestProduct from "../../components/profile/profile/LatestProduct";
-import OngoingTask from "../../components/profile/profile/OngoingTask";
+import RecentPost from "../components/profile/profile/RecentPost";
+import LatestProduct from "../components/profile/profile/LatestProduct";
+import OngoingTask from "../components/profile/profile/OngoingTask";
 
 const Profile = () => {
   const [data, setData] = useState(null);

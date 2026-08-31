@@ -1,14 +1,16 @@
-import { Box, Typography, TextField, Button, Divider } from "@mui/material";
+import { Box, Typography, TextField, Button, Divider, IconButton, InputAdornment } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import GoogleIcon from "@mui/icons-material/Google";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import useThinkify from "../hooks/useThinkify";
-import AlertBox from "../../components/common/AlertBox";
+import useGoogleAuth from "../hooks/useGoogleAuth";
+import AlertBox from "../components/common/AlertBox";
 import { useAuth0 } from "@auth0/auth0-react";
 
 const schema = yup.object().shape({
@@ -26,8 +28,11 @@ const schema = yup.object().shape({
 
 const Registration = () => {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const handleMouseDownPassword = (event) => event.preventDefault();
   const { setAlertBoxOpenStatus, setAlertMessage, setAlertSeverity } = useThinkify();
-  const { loginWithRedirect, user, isAuthenticated, getIdTokenClaims,getAccessTokenSilently    } = useAuth0();
+  const { handleGoogleLogin } = useGoogleAuth();
+  const { isAuthenticated } = useAuth0();
 
   // form validation
   const {
@@ -42,84 +47,6 @@ const Registration = () => {
     },
     resolver: yupResolver(schema),
   });
-
-  const handleGoogleLogin = async () => {
-    try {
-      await loginWithRedirect({
-        appState: {
-          returnTo: "/profile"
-        },
-        authorizationParams: {
-          connection: "google-oauth2"
-        }
-      });
-    } catch (error) {
-      console.error("Google login error:", error);
-      setAlertBoxOpenStatus(true);
-      setAlertSeverity("error");
-      setAlertMessage("Google login failed");
-    }
-  };
-
-  useEffect(() => {
-    const checkAuth0User = async () => {
-      if (isAuthenticated && user) {
-        try {
-          // const tokenClaims = await getIdTokenClaims();
-      const auth0Token = await getAccessTokenSilently({
-      authorizationParams: {
-        audience: "https://smartpost-api",
-        scope: "openid profile email"
-      }
-    });
-
-          // const auth0Token = tokenClaims.__raw;
-          
-          // console.log("🚀 ~ :73 ~ checkAuth0User ~ auth0Token:", auth0Token);
-              // console.log("🚀 ~ :80 ~ checkAuth0User ~ user:", user);
-
-          const response = await axios.post(
-            `${import.meta.env.VITE_SERVER_ENDPOINT}/users/auth0-registration`,
-            {
-              fullName: user.name,
-
-              email: user.email,
-              auth0Id: user.sub,
-              picture: user.picture
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${auth0Token}`
-              }
-            }
-          );
-          
-          // console.debug("🚀 ~ :87 ~ checkAuth0User ~ response:", response);
-
-          
-          if (response.data.status) {
-            Cookies.set(import.meta.env.VITE_TOKEN_KEY, response.data.token, {
-              expires: Number(import.meta.env.VITE_COOKIE_EXPIRES),
-              path: "/",
-            });
-            Cookies.set(import.meta.env.VITE_USER_ROLE, response.data.user.role, {
-              expires: Number(import.meta.env.VITE_COOKIE_EXPIRES),
-              path: "/",
-            });
-            if (response.data.user.role === "user") {
-              navigate("/profile");
-            } else if (response.data.user.role === "admin") {
-              navigate("/dashboard");
-            }
-          }
-        } catch (error) {
-          console.error("Auth0 integration error:", error);
-        }
-      }
-    };
-
-    checkAuth0User();
-  }, [isAuthenticated, user, navigate, getIdTokenClaims]);
   useEffect(() => {
     const token = Cookies.get(import.meta.env.VITE_TOKEN_KEY);
     const role = Cookies.get(import.meta.env.VITE_USER_ROLE);
@@ -287,7 +214,7 @@ const Registration = () => {
               <TextField
                 fullWidth
                 placeholder="Enter Password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 sx={{
                   mb: 1,
                   "& .MuiOutlinedInput-root": {
@@ -307,6 +234,22 @@ const Registration = () => {
                       color: "#cccccc",
                     },
                   },
+                  "& .MuiSvgIcon-root": {
+                    color: "white",
+                  },
+                }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        onMouseDown={handleMouseDownPassword}
+                      >
+                        {showPassword ? <Visibility /> : <VisibilityOff />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
                 }}
                 {...register("password")}
               />

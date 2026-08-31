@@ -6,15 +6,19 @@ import {
   Checkbox,
   Button,
   Divider,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import GoogleIcon from "@mui/icons-material/Google";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
 import Cookies from "js-cookie";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import useThinkify from "../hooks/useThinkify";
-import AlertBox from "../../components/common/AlertBox";
+import useGoogleAuth from "../hooks/useGoogleAuth";
+import AlertBox from "../components/common/AlertBox";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
@@ -25,6 +29,9 @@ const schema = yup.object().shape({
 
 const Login = () => {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const handleMouseDownPassword = (event) => event.preventDefault();
+  const { handleGoogleLogin } = useGoogleAuth();
   // alert message
   const { setAlertBoxOpenStatus, setAlertMessage, setAlertSeverity } =
     useThinkify();
@@ -173,7 +180,7 @@ const Login = () => {
               <TextField
                 fullWidth
                 placeholder="Enter Password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 sx={{
                   mb: 1,
                   color: "white",
@@ -193,6 +200,22 @@ const Login = () => {
                       color: "white",
                     },
                   },
+                  "& .MuiSvgIcon-root": {
+                    color: "white",
+                  },
+                }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        onMouseDown={handleMouseDownPassword}
+                      >
+                        {showPassword ? <Visibility /> : <VisibilityOff />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
                 }}
                 {...register("password", { required: true })}
               />
@@ -229,10 +252,11 @@ const Login = () => {
             <Divider sx={{ my: 1, color: "white" }}>OR</Divider>
             <Box>
               <Button
-                type="submit"
+                type="button"
                 variant="contained"
                 fullWidth
                 startIcon={<GoogleIcon />}
+                onClick={handleGoogleLogin}
               >
                 Continue With Google
               </Button>

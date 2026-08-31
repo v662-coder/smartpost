@@ -64,6 +64,7 @@ const Product = () => {
           <CardMedia
             component="img"
             height="240"
+            sx={{ objectFit: "cover" }}
             image={`${import.meta.env.VITE_SERVER_ENDPOINT}/productimage/${
               product.image
             }`}

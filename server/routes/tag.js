@@ -1,5 +1,5 @@
 import express from 'express';
-import { addTag, editTag, getAllTag, removeTag } from '../controller/tag.js';
+import { addTag, editTag, getAllTag, removeTag } from '../controllers/tag.js';
 
 const tag = express.Router();
 
